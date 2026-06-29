@@ -397,15 +397,15 @@
         <div class="field">
           <label for="stage">Etap projektu</label>
           <div class="radio-group" id="stageGroup">
-            <label class="radio-option" onclick="selectRadio(this,'stage')">
+            <label class="radio-option" onclick="selectRadio(this)">
               <input type="radio" name="Etap projektu" value="Nowy pomysł – jeszcze nic nie działa" required />
               <span><span class="opt-label">Nowy pomysł</span><span class="opt-desc">Jeszcze nic nie działa – szukam kierunku</span></span>
             </label>
-            <label class="radio-option" onclick="selectRadio(this,'stage')">
+            <label class="radio-option" onclick="selectRadio(this)">
               <input type="radio" name="Etap projektu" value="Działający biznes – szukam dywersyfikacji" />
               <span><span class="opt-label">Działający biznes</span><span class="opt-desc">Chcę zdywersyfikować przychody lub wejść w nową niszę</span></span>
             </label>
-            <label class="radio-option" onclick="selectRadio(this,'stage')">
+            <label class="radio-option" onclick="selectRadio(this)">
               <input type="radio" name="Etap projektu" value="Firma w transformacji / restrukturyzacji" />
               <span><span class="opt-label">Transformacja</span><span class="opt-desc">Firma przechodzi zmianę modelu lub restrukturyzację</span></span>
             </label>
@@ -463,15 +463,15 @@
         <div class="field">
           <label for="capex">Czy potrzebujesz zewnętrznego finansowania?</label>
           <div class="radio-group">
-            <label class="radio-option" onclick="selectRadio(this,'capex')">
+            <label class="radio-option" onclick="selectRadio(this)">
               <input type="radio" name="Finansowanie zewnętrzne" value="Nie – model oparty na własnych zasobach / OpEx" required />
               <span><span class="opt-label">Nie</span><span class="opt-desc">Optymalizuję istniejące zasoby, bez nowych inwestycji</span></span>
             </label>
-            <label class="radio-option" onclick="selectRadio(this,'capex')">
+            <label class="radio-option" onclick="selectRadio(this)">
               <input type="radio" name="Finansowanie zewnętrzne" value="Możliwe – rozważam dotacje lub kredyt" />
               <span><span class="opt-label">Możliwe</span><span class="opt-desc">Rozważam dotacje (np. UE), kredyt lub leasing</span></span>
             </label>
-            <label class="radio-option" onclick="selectRadio(this,'capex')">
+            <label class="radio-option" onclick="selectRadio(this)">
               <input type="radio" name="Finansowanie zewnętrzne" value="Tak – szukam inwestora / VC" />
               <span><span class="opt-label">Tak</span><span class="opt-desc">Szukam inwestora zewnętrznego lub funduszu VC</span></span>
             </label>
@@ -480,15 +480,15 @@
         <div class="field">
           <label for="margin">Jakiej marży brutto oczekujesz? (orientacyjnie)</label>
           <div class="radio-group">
-            <label class="radio-option" onclick="selectRadio(this,'margin')">
+            <label class="radio-option" onclick="selectRadio(this)">
               <input type="radio" name="Oczekiwana marża brutto" value="Poniżej 20%" required />
               <span><span class="opt-label">Poniżej 20%</span><span class="opt-desc">Model wolumenowy – liczy się skala</span></span>
             </label>
-            <label class="radio-option" onclick="selectRadio(this,'margin')">
+            <label class="radio-option" onclick="selectRadio(this)">
               <input type="radio" name="Oczekiwana marża brutto" value="20–40%" />
               <span><span class="opt-label">20–40%</span><span class="opt-desc">Typowa marża dla usług i produkcji specjalistycznej</span></span>
             </label>
-            <label class="radio-option" onclick="selectRadio(this,'margin')">
+            <label class="radio-option" onclick="selectRadio(this)">
               <input type="radio" name="Oczekiwana marża brutto" value="Powyżej 40%" />
               <span><span class="opt-label">Powyżej 40%</span><span class="opt-desc">Model wysokomarżowy – usługi premium, SaaS, licencje</span></span>
             </label>
@@ -579,18 +579,22 @@
 
   function validateStep(n) {
     var step = document.getElementById('step-' + n);
-    var inputs = step.querySelectorAll('input[required], textarea[required]');
     var ok = true;
-    inputs.forEach(function(inp) {
+
+    step.querySelectorAll('input[required], textarea[required]').forEach(function(inp) {
       if (inp.type === 'radio') return;
       if (!inp.value.trim()) { inp.focus(); ok = false; }
     });
+
     var radioGroups = {};
-    step.querySelectorAll('input[type="radio"][required]').forEach(function(r) {
-      radioGroups[r.name] = radioGroups[r.name] || false;
+    step.querySelectorAll('input[type="radio"]').forEach(function(r) {
+      if (!(r.name in radioGroups)) radioGroups[r.name] = false;
       if (r.checked) radioGroups[r.name] = true;
     });
-    Object.values(radioGroups).forEach(function(v) { if (!v) ok = false; });
+    Object.keys(radioGroups).forEach(function(name) {
+      if (!radioGroups[name]) ok = false;
+    });
+
     return ok;
   }
 
@@ -610,11 +614,7 @@
     if (currentStep > 0) { currentStep--; showStep(currentStep); }
   }
 
-  function selectRadio(label, group) {
-    document.querySelectorAll('.radio-option').forEach(function(el) {
-      var r = el.querySelector('input[type="radio"]');
-      if (r && r.name === document.querySelector('input[name]', label)) {}
-    });
+  function selectRadio(label) {
     var radio = label.querySelector('input[type="radio"]');
     if (!radio) return;
     document.querySelectorAll('input[name="' + radio.name + '"]').forEach(function(r) {
