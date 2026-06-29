@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wizard BMC – Analiza Biznesowa</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --border: #e2e0d8;
+    --border-strong: #c8c5ba;
+    --text-primary: #1a1917;
+    --text-secondary: #5c5a54;
+    --text-muted: #9a9890;
+    --accent: #2563a8;
+    --accent-bg: #eef4fb;
+    --accent-border: #b8d0ed;
+    --success: #166534;
+    --success-bg: #f0fdf4;
+    --success-border: #bbf7d0;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .shell {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 2.5rem;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .logo-mark {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-mark svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .logo-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 2rem;
+  }
+
+  .progress-segment {
+    height: 3px;
+    flex: 1;
+    border-radius: 99px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .progress-segment.done { background: var(--accent); }
+  .progress-segment.active { background: var(--accent); opacity: 0.5; }
+
+  .step-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .card h2 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: var(--text-primary);
+  }
+
+  .card .hint {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+  }
+
+  .field {
+    margin-bottom: 1.25rem;
+  }
+
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text-primary);
+    background: #fff;
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: none;
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37,99,168,0.1);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.55;
+  }
+
+  .radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .radio-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .radio-option:hover { border-color: var(--border-strong); background: var(--bg); }
+
+  .radio-option input[type="radio"] {
+    width: auto;
+    margin-top: 2px;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .radio-option.selected {
+    border-color: var(--accent-border);
+    background: var(--accent-bg);
+  }
+
+  .radio-option .opt-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+
+  .radio-option .opt-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 1px;
+  }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--radius);
+    cursor: pointer;
+    border: 0.5px solid var(--border-strong);
+    background: #fff;
+    color: var(--text-primary);
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+    text-decoration: none;
+  }
+
+  .btn:hover { background: var(--bg); border-color: var(--border-strong); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .btn-primary:hover { background: #1d4f8a; border-color: #1d4f8a; }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .step { display: none; }
+  .step.active { display: block; }
+
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .summary-table tr td {
+    padding: 7px 0;
+    border-bottom: 0.5px solid var(--border);
+    vertical-align: top;
+  }
+
+  .summary-table tr:last-child td { border-bottom: none; }
+
+  .summary-table td:first-child {
+    color: var(--text-secondary);
+    font-weight: 500;
+    width: 42%;
+    padding-right: 12px;
+  }
+
+  .summary-table td:last-child { color: var(--text-primary); }
+
+  [data-fs-success] {
+    display: none;
+    background: var(--success-bg);
+    border: 0.5px solid var(--success-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+  }
+
+  [data-fs-success] .success-icon {
+    width: 48px;
+    height: 48px;
+    background: #dcfce7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+  }
+
+  [data-fs-success] h2 { font-size: 18px; font-weight: 600; color: var(--success); margin-bottom: 0.4rem; }
+  [data-fs-success] p { font-size: 14px; color: #15803d; }
+
+  [data-fs-error] {
+    display: none;
+    background: #fef2f2;
+    border: 0.5px solid #fecaca;
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #991b1b;
+    margin-bottom: 1rem;
+  }
+
+  .char-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 3px;
+  }
+
+  @media (max-width: 500px) {
+    .card { padding: 1.25rem; }
+    h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header>
+    <div class="logo-row">
+      <div class="logo-mark">
+        <svg viewBox="0 0 18 18"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="10" y="2" width="6" height="6" rx="1"/><rect x="2" y="10" width="6" height="6" rx="1"/><rect x="10" y="10" width="6" height="6" rx="1"/></svg>
+      </div>
+      <span class="logo-label">EEN · Analiza BMC</span>
+    </div>
+    <h1>Opisz swój pomysł biznesowy</h1>
+    <p class="subtitle">4 kroki · ok. 10 minut · Twoje odpowiedzi trafią do konsultanta przed sesją</p>
+  </header>
+
+  <div class="progress-bar" id="progressBar">
+    <div class="progress-segment active" id="seg0"></div>
+    <div class="progress-segment" id="seg1"></div>
+    <div class="progress-segment" id="seg2"></div>
+    <div class="progress-segment" id="seg3"></div>
+  </div>
+
+  <div data-fs-error id="globalError">Wystąpił błąd przy wysyłaniu. Spróbuj ponownie.</div>
+  <div data-fs-success id="successMsg">
+    <div class="success-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Dziękujemy za wypełnienie wizarda!</h2>
+    <p>Konsultant otrzymał Twoje odpowiedzi i przygotuje analizę BMC przed wspólną sesją.</p>
+  </div>
+
+  <form id="bmc-form">
+
+    <!-- KROK 1 -->
+    <div class="step active" id="step-0">
+      <div class="step-label">Krok 1 z 4 · Dane kontaktowe i kontekst</div>
+      <div class="card">
+        <h2>Kilka słów o Tobie i firmie</h2>
+        <p class="hint">Te dane pomogą konsultantowi przygotować się do rozmowy z Tobą.</p>
+        <div class="field">
+          <label for="name">Imię i nazwisko</label>
+          <input type="text" id="name" name="Imię i nazwisko" placeholder="Jan Kowalski" required />
+        </div>
+        <div class="field">
+          <label for="email">Adres e-mail</label>
+          <input type="email" id="email" name="email" placeholder="jan@firma.pl" required />
+        </div>
+        <div class="field">
+          <label for="company">Nazwa firmy</label>
+          <input type="text" id="company" name="Nazwa firmy" placeholder="np. Kowalski Produkcja Sp. z o.o." required />
+        </div>
+        <div class="field">
+          <label for="industry">Branża / sektor</label>
+          <input type="text" id="industry" name="Branża" placeholder="np. produkcja metalowa, usługi IT, logistyka…" required />
+        </div>
+        <div class="field">
+          <label for="stage">Etap projektu</label>
+          <div class="radio-group" id="stageGroup">
+            <label class="radio-option" onclick="selectRadio(this,'stage')">
+              <input type="radio" name="Etap projektu" value="Nowy pomysł – jeszcze nic nie działa" required />
+              <span><span class="opt-label">Nowy pomysł</span><span class="opt-desc">Jeszcze nic nie działa – szukam kierunku</span></span>
+            </label>
+            <label class="radio-option" onclick="selectRadio(this,'stage')">
+              <input type="radio" name="Etap projektu" value="Działający biznes – szukam dywersyfikacji" />
+              <span><span class="opt-label">Działający biznes</span><span class="opt-desc">Chcę zdywersyfikować przychody lub wejść w nową niszę</span></span>
+            </label>
+            <label class="radio-option" onclick="selectRadio(this,'stage')">
+              <input type="radio" name="Etap projektu" value="Firma w transformacji / restrukturyzacji" />
+              <span><span class="opt-label">Transformacja</span><span class="opt-desc">Firma przechodzi zmianę modelu lub restrukturyzację</span></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <span></span>
+        <button type="button" class="btn btn-primary" onclick="nextStep()">Dalej →</button>
+      </div>
+    </div>
+
+    <!-- KROK 2 -->
+    <div class="step" id="step-1">
+      <div class="step-label">Krok 2 z 4 · Klient i propozycja wartości</div>
+      <div class="card">
+        <h2>Dla kogo i dlaczego Twoja oferta?</h2>
+        <p class="hint">Opisz odbiorcę jak najdokładniej. Im więcej szczegółów, tym lepsza analiza.</p>
+        <div class="field">
+          <label for="segment">Kto jest Twoim docelowym klientem?</label>
+          <textarea id="segment" name="Segment klientów" placeholder="np. Firmy produkcyjne z sektora automotive, zatrudniające 50–200 osób, działające w Polsce i Niemczech…" required></textarea>
+          <div class="char-count" id="cc-segment">0 / 500</div>
+        </div>
+        <div class="field">
+          <label for="pains">Jakie problemy / bóle tego klienta rozwiązujesz?</label>
+          <textarea id="pains" name="Problemy klientów (pains)" placeholder="np. Przestoje produkcyjne przez brak szybkiego serwisu, wysokie koszty magazynowania części zamiennych…" required></textarea>
+          <div class="char-count" id="cc-pains">0 / 500</div>
+        </div>
+        <div class="field">
+          <label for="value">Dlaczego klient wybierze Ciebie, a nie konkurencję?</label>
+          <textarea id="value" name="Propozycja wartości (USP)" placeholder="np. Jedyni w regionie z mobilnym serwisem 24/7, własna technologia diagnostyczna…" required></textarea>
+          <div class="char-count" id="cc-value">0 / 500</div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button type="button" class="btn" onclick="prevStep()">← Wróć</button>
+        <button type="button" class="btn btn-primary" onclick="nextStep()">Dalej →</button>
+      </div>
+    </div>
+
+    <!-- KROK 3 -->
+    <div class="step" id="step-2">
+      <div class="step-label">Krok 3 z 4 · Finanse i operacje</div>
+      <div class="card">
+        <h2>Jak wygląda model finansowy?</h2>
+        <p class="hint">Nie musisz znać dokładnych liczb – liczy się Twoje rozumienie opłacalności.</p>
+        <div class="field">
+          <label for="revenue">Skąd będą pochodzić przychody?</label>
+          <textarea id="revenue" name="Źródła przychodów" placeholder="np. Abonament miesięczny, sprzedaż jednorazowa, prowizja od transakcji, kontrakt ramowy B2B…" required></textarea>
+        </div>
+        <div class="field">
+          <label for="costs">Jakie są główne koszty uruchomienia i utrzymania?</label>
+          <textarea id="costs" name="Struktura kosztów" placeholder="np. Maszyna CNC (CapEx 200k PLN), 3 pracowników, materiały, certyfikaty ISO…" required></textarea>
+        </div>
+        <div class="field">
+          <label for="capex">Czy potrzebujesz zewnętrznego finansowania?</label>
+          <div class="radio-group">
+            <label class="radio-option" onclick="selectRadio(this,'capex')">
+              <input type="radio" name="Finansowanie zewnętrzne" value="Nie – model oparty na własnych zasobach / OpEx" required />
+              <span><span class="opt-label">Nie</span><span class="opt-desc">Optymalizuję istniejące zasoby, bez nowych inwestycji</span></span>
+            </label>
+            <label class="radio-option" onclick="selectRadio(this,'capex')">
+              <input type="radio" name="Finansowanie zewnętrzne" value="Możliwe – rozważam dotacje lub kredyt" />
+              <span><span class="opt-label">Możliwe</span><span class="opt-desc">Rozważam dotacje (np. UE), kredyt lub leasing</span></span>
+            </label>
+            <label class="radio-option" onclick="selectRadio(this,'capex')">
+              <input type="radio" name="Finansowanie zewnętrzne" value="Tak – szukam inwestora / VC" />
+              <span><span class="opt-label">Tak</span><span class="opt-desc">Szukam inwestora zewnętrznego lub funduszu VC</span></span>
+            </label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="margin">Jakiej marży brutto oczekujesz? (orientacyjnie)</label>
+          <div class="radio-group">
+            <label class="radio-option" onclick="selectRadio(this,'margin')">
+              <input type="radio" name="Oczekiwana marża brutto" value="Poniżej 20%" required />
+              <span><span class="opt-label">Poniżej 20%</span><span class="opt-desc">Model wolumenowy – liczy się skala</span></span>
+            </label>
+            <label class="radio-option" onclick="selectRadio(this,'margin')">
+              <input type="radio" name="Oczekiwana marża brutto" value="20–40%" />
+              <span><span class="opt-label">20–40%</span><span class="opt-desc">Typowa marża dla usług i produkcji specjalistycznej</span></span>
+            </label>
+            <label class="radio-option" onclick="selectRadio(this,'margin')">
+              <input type="radio" name="Oczekiwana marża brutto" value="Powyżej 40%" />
+              <span><span class="opt-label">Powyżej 40%</span><span class="opt-desc">Model wysokomarżowy – usługi premium, SaaS, licencje</span></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button type="button" class="btn" onclick="prevStep()">← Wróć</button>
+        <button type="button" class="btn btn-primary" onclick="nextStep()">Dalej →</button>
+      </div>
+    </div>
+
+    <!-- KROK 4 -->
+    <div class="step" id="step-3">
+      <div class="step-label">Krok 4 z 4 · Skalowanie i gotowość</div>
+      <div class="card">
+        <h2>Czy jesteś gotowy na wzrost?</h2>
+        <p class="hint">Perspektywa inwestorska: oceniamy odporność modelu na gwałtowny wzrost popytu.</p>
+        <div class="field">
+          <label for="scale">Co się stanie, gdy zamówień będzie 3× więcej niż dziś?</label>
+          <textarea id="scale" name="Gotowość do skalowania" placeholder="np. Łańcuch dostaw wytrzyma – mamy 2 dostawców rezerwowych. Problemem będzie zatrudnienie – mamy tylko 1 operatora CNC…" required></textarea>
+        </div>
+        <div class="field">
+          <label for="moat">Co chroni Twój model przed skopiowaniem przez konkurencję?</label>
+          <textarea id="moat" name="Bariery wejścia (moat)" placeholder="np. Patent na technologię, 10-letnie relacje z kluczowymi klientami, certyfikat, którego zdobycie trwa 2 lata…" required></textarea>
+        </div>
+        <div class="field">
+          <label for="team">Jakie kompetencje ma Twój zespół – i czego brakuje?</label>
+          <textarea id="team" name="Kompetencje zespołu i luki" placeholder="np. Mamy silny dział techniczny, brakuje nam osoby od sprzedaży B2B i marketingu digitalowego…" required></textarea>
+        </div>
+        <div class="field">
+          <label for="extra">Czy jest coś, co chcesz dodać, zanim spotkasz się z konsultantem?</label>
+          <textarea id="extra" name="Dodatkowe informacje" placeholder="Opcjonalnie – dowolne uwagi, kontekst, obawy…"></textarea>
+        </div>
+      </div>
+
+      <!-- PODGLĄD PODSUMOWANIA -->
+      <div class="card" id="summaryCard" style="border-color: var(--accent-border); background: var(--accent-bg);">
+        <h2 style="color: var(--accent); margin-bottom: 1rem;">Podgląd Twoich odpowiedzi</h2>
+        <table class="summary-table" id="summaryTable"></table>
+      </div>
+
+      <div class="nav-row">
+        <button type="button" class="btn" onclick="prevStep()">← Wróć</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn" data-fs-submit-btn>Wyślij do konsultanta ↗</button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+  formspree('initForm', {
+    formElement: '#bmc-form',
+    formId: 'mkolzozj',
+    onSuccess: function() {
+      document.getElementById('bmc-form').style.display = 'none';
+      document.getElementById('progressBar').style.display = 'none';
+      document.querySelector('header').style.display = 'none';
+      document.getElementById('successMsg').style.display = 'block';
+    },
+    onError: function() {
+      var err = document.getElementById('globalError');
+      err.style.display = 'block';
+      window.scrollTo({ top: err.offsetTop - 20, behavior: 'smooth' });
+    }
+  });
+</script>
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+
+<script>
+  var currentStep = 0;
+  var totalSteps = 4;
+
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(function(s, i) {
+      s.classList.toggle('active', i === n);
+    });
+    for (var i = 0; i < totalSteps; i++) {
+      var seg = document.getElementById('seg' + i);
+      if (i < n) { seg.className = 'progress-segment done'; }
+      else if (i === n) { seg.className = 'progress-segment active'; }
+      else { seg.className = 'progress-segment'; }
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function validateStep(n) {
+    var step = document.getElementById('step-' + n);
+    var inputs = step.querySelectorAll('input[required], textarea[required]');
+    var ok = true;
+    inputs.forEach(function(inp) {
+      if (inp.type === 'radio') return;
+      if (!inp.value.trim()) { inp.focus(); ok = false; }
+    });
+    var radioGroups = {};
+    step.querySelectorAll('input[type="radio"][required]').forEach(function(r) {
+      radioGroups[r.name] = radioGroups[r.name] || false;
+      if (r.checked) radioGroups[r.name] = true;
+    });
+    Object.values(radioGroups).forEach(function(v) { if (!v) ok = false; });
+    return ok;
+  }
+
+  function nextStep() {
+    if (!validateStep(currentStep)) {
+      alert('Uzupełnij wszystkie wymagane pola przed przejściem dalej.');
+      return;
+    }
+    if (currentStep < totalSteps - 1) {
+      currentStep++;
+      showStep(currentStep);
+      if (currentStep === totalSteps - 1) buildSummary();
+    }
+  }
+
+  function prevStep() {
+    if (currentStep > 0) { currentStep--; showStep(currentStep); }
+  }
+
+  function selectRadio(label, group) {
+    document.querySelectorAll('.radio-option').forEach(function(el) {
+      var r = el.querySelector('input[type="radio"]');
+      if (r && r.name === document.querySelector('input[name]', label)) {}
+    });
+    var radio = label.querySelector('input[type="radio"]');
+    if (!radio) return;
+    document.querySelectorAll('input[name="' + radio.name + '"]').forEach(function(r) {
+      r.closest('.radio-option').classList.remove('selected');
+    });
+    label.classList.add('selected');
+    radio.checked = true;
+  }
+
+  var textareas = document.querySelectorAll('textarea[id]');
+  textareas.forEach(function(ta) {
+    var cc = document.getElementById('cc-' + ta.id);
+    if (!cc) return;
+    ta.addEventListener('input', function() {
+      cc.textContent = ta.value.length + ' / 500';
+    });
+  });
+
+  function buildSummary() {
+    var form = document.getElementById('bmc-form');
+    var rows = [];
+    form.querySelectorAll('input[name], textarea[name], select[name]').forEach(function(el) {
+      if (el.type === 'radio' && !el.checked) return;
+      if (el.type === 'email' && el.name === 'email') return;
+      var val = el.value.trim();
+      if (!val) return;
+      rows.push({ label: el.name, value: val });
+    });
+    var html = rows.map(function(r) {
+      return '<tr><td>' + r.label + '</td><td>' + r.value.replace(/\n/g, '<br>') + '</td></tr>';
+    }).join('');
+    document.getElementById('summaryTable').innerHTML = html;
+  }
+</script>
+</body>
+</html>
